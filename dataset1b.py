@@ -23,7 +23,7 @@ def get_class_wise_data(data):
     return obj
 
 
-def get_kmeans(data, k, num_iters=10):
+def get_kmeans(data, k, num_iters=10, diagonal=False):
     d = data.shape[1]
     init_means = np.random.randint(0, data.shape[0], size=k)
     kmeans = np.zeros((k, d))
@@ -79,6 +79,11 @@ def get_kmeans(data, k, num_iters=10):
         data_points = np.array(data_points)
         data_points = data_points - kmeans[j]
         cov_matrix = np.matmul(data_points.T, data_points)
+        if diagonal:
+            for x in range(cov_matrix.shape[0]):
+                for y in range(cov_matrix.shape[1]):
+                    if x != y:
+                        cov_matrix[x][y] = 0.0
         covmatrices.append(cov_matrix)
         wqs.append(curr_count / data.shape[0])
     covmatrices = np.array(covmatrices)
@@ -109,7 +114,7 @@ def calculate_responsibilty_terms(data, kmeans, covmatrices, wqs):
     return gammas
 
 
-def maximization_step(data, gammas):
+def maximization_step(data, gammas, diagonal=False):
     d = data.shape[1]
     q = gammas.shape[1]
     nq = np.sum(gammas, axis=0)
@@ -128,6 +133,11 @@ def maximization_step(data, gammas):
             mean_subtracted = np.array([mean_subtracted])
             curr += gammas[j][i] * np.multiply(mean_subtracted.T, mean_subtracted)
         curr /= nq[i]
+        if diagonal:
+            for x in range(curr.shape[0]):
+                for y in range(curr.shape[1]):
+                    if x != y:
+                        curr[x][y] = 0.0
         c_q.append(curr)
     c_q = np.array(c_q)
     return mu_q, c_q, wqs
@@ -153,17 +163,18 @@ def calculate_log_likelihood(data, mus, cqs, wqs):
     return likelihood
 
 
-def gmm(data):
+def gmm(data, q=4, diagonal=False):
+    print('Making model...')
     class_wise_data = get_class_wise_data(data)
     tol = 0.001
     res = {}
     for class_ in class_wise_data:
-        k_means, cov_matrices, w_qs = get_kmeans(class_wise_data.get(class_), 4)
+        k_means, cov_matrices, w_qs = get_kmeans(class_wise_data.get(class_), q, diagonal=diagonal)
         curr_likelihood = calculate_log_likelihood(class_wise_data.get(class_), k_means, cov_matrices, w_qs)
         err = 999
         while err > tol:
             gammas_ = calculate_responsibilty_terms(class_wise_data.get(class_), k_means, cov_matrices, w_qs)
-            k_means, cov_matrices, w_qs = maximization_step(class_wise_data.get(class_), gammas_)
+            k_means, cov_matrices, w_qs = maximization_step(class_wise_data.get(class_), gammas_, diagonal=diagonal)
             new_likelihood = calculate_log_likelihood(class_wise_data.get(class_), k_means, cov_matrices, w_qs)
             err = abs(new_likelihood - curr_likelihood)
             curr_likelihood = new_likelihood
@@ -213,6 +224,7 @@ def predict(x, model):
 
 
 def get_accuracy(data, model):
+    print('Getting accuracy...')
     correct = 0
     total = data.shape[0]
     d = data.shape[1] - 1
@@ -225,8 +237,54 @@ def get_accuracy(data, model):
     return acc
 
 
-model = gmm(train_data)
-train_acc = get_accuracy(train_data, model)
-val_acc = get_accuracy(val_data, model)
-print('Train Accuracy:', train_acc)
-print('Val Accuracy:', val_acc)
+def knn_classifier(x, data, k):
+    pred = 0
+    min_radius = 999
+    for class_ in data:
+        class_data = data.get(class_)
+        distances = []
+        for point in class_data:
+            if (point == x).all():
+                continue
+            dist = np.linalg.norm(x - point)
+            distances.append(dist)
+        distances.sort()
+        r_i = distances[k-1]
+        if r_i < min_radius:
+            pred = class_
+            min_radius = r_i
+    return pred
+
+
+def get_knn_accuracy(train_, val_, k):
+    class_wise_acc = {}
+    for class_ in val_:
+        class_points = val_.get(class_)
+        correct = 0
+        total = 0
+        for point in class_points:
+            pred = knn_classifier(point, train_, k)
+            total += 1
+            if pred == class_:
+                correct += 1
+        acc = correct / total
+        class_wise_acc[class_] = {
+            'correct': correct,
+            'total': total,
+            'accuracy': acc
+        }
+    return class_wise_acc
+
+
+# GMM model
+# model = gmm(train_data, q=4, diagonal=False)
+# train_acc = get_accuracy(train_data, model)
+# val_acc = get_accuracy(val_data, model)
+# print('Train Accuracy:', train_acc)
+# print('Val Accuracy:', val_acc)
+
+# KNN model
+train_class_wise = get_class_wise_data(train_data)
+val_class_wise = get_class_wise_data(val_data)
+res = get_knn_accuracy(train_class_wise, val_class_wise, 10)
+print(res)
