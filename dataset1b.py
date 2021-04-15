@@ -277,11 +277,11 @@ def get_knn_accuracy(train_, val_, k):
 
 
 # GMM model
-# model = gmm(train_data, q=4, diagonal=False)
-# train_acc = get_accuracy(train_data, model)
-# val_acc = get_accuracy(val_data, model)
-# print('Train Accuracy:', train_acc)
-# print('Val Accuracy:', val_acc)
+model = gmm(train_data, q=4, diagonal=True)  # diagonal = True for diagonal covariance matrix
+train_acc = get_accuracy(train_data, model)
+val_acc = get_accuracy(val_data, model)
+print('Train Accuracy:', train_acc)
+print('Val Accuracy:', val_acc)
 
 # KNN model
 train_class_wise = get_class_wise_data(train_data)
