@@ -4,10 +4,10 @@ import pandas as pd
 from sklearn.metrics import confusion_matrix
 
 
-train_data = pd.read_csv('data/Dataset 1A/train.csv')
+train_data = pd.read_csv('data/Dataset 1B/train.csv')
 train_data = train_data.to_numpy()
 
-dev_data = pd.read_csv('data/Dataset 1A/dev.csv')
+dev_data = pd.read_csv('data/Dataset 1B/dev.csv')
 
 dev_data = dev_data.to_numpy()
 
@@ -170,7 +170,7 @@ def get_naive_bayes_accuracy(mean_var, priors, data):
 #     mean_vars, priors = naive_bayes_classifier(train_data, case=case)
 #     print('Case:', case, 'Accuracy:', get_naive_bayes_accuracy(mean_vars, priors, dev_data))
 
-mean_vars, priors = naive_bayes_classifier(train_data, case=2)
+# mean_vars, priors = naive_bayes_classifier(train_data, case=2)
 class_wise_data = get_class_wise_data(train_data)
 fig, ax = plt.subplots()
 colors = ['r', 'g', 'b', 'y']
@@ -202,34 +202,22 @@ y_list = np.linspace(min_y, max_y, 100)
 
 
 k = 0
-for class_ in mean_vars:
-    z = np.zeros((len(x_list), len(x_list)))
-    X = []
-    Y = []
-    for i in range(len(x_list)):
-        temp_x = []
-        temp_y = []
-        for j in range(len(y_list)):
-            temp_x.append(x_list[i])
-            temp_y.append(y_list[j])
-            point = np.array([x_list[i], y_list[j]])
-            d = len(point)
-            class_mean = mean_vars.get(class_)[0]
-            class_cov = mean_vars.get(class_)[1]
-            class_cov = class_cov.astype(np.float64)
-            x_mean_sub = point - class_mean
-            exp_pow = np.dot(x_mean_sub, np.dot(np.linalg.inv(class_cov), x_mean_sub.T))
-            exp_pow = (-1 / 2) * exp_pow
-            cov_det = np.linalg.det(class_cov)
-            p = np.exp(exp_pow)
-            p /= (2 * np.pi) ** (d / 2)
-            p /= np.sqrt(cov_det)
-            z[i][j] = p
-        X.append(temp_x)
-        Y.append(temp_y)
+z = np.zeros((len(x_list), len(x_list)))
+X = []
+Y = []
+for i in range(len(x_list)):
+    temp_x = []
+    temp_y = []
+    for j in range(len(y_list)):
+        temp_x.append(x_list[i])
+        temp_y.append(y_list[j])
+        point = np.array([x_list[i], y_list[j], 0])
+        z[i][j] = get_knns(7, point, train_data)
+    X.append(temp_x)
+    Y.append(temp_y)
 
-    ax.contour(X, Y, z, 10, colors=colors[k])
-    k += 1
+ax.contourf(X, Y, z)
+
 
 for class_ in class_wise_data:
     x = []
