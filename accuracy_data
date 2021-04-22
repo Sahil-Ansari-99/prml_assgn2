@@ -1,0 +1,137 @@
+----------Dataset 1A----------
+
+1. K-NN Classifier
+
+K       Training Accuracy       Validation Accuracy
+1               100 %               100 %
+7               100 %               100 %
+15              100 %               100 %
+
+Confusion Matrix for best model: K = 7, classes=0, 1, 2, 3
+
+Train data:
+
+[[200   0   0   0]
+ [  0 200   0   0]
+ [  0   0 199   0]
+ [  0   0   0 200]]
+
+Val data:
+
+[[29  0  0  0]
+ [ 0 30  0  0]
+ [ 0  0 30  0]
+ [ 0  0  0 30]]
+
+2. Naive Bayes Classifier
+
+Case     Training Accuracy     Validation Accuracy
+A               100 %               100 %
+B               100 %               100 %
+C               100 %               100 %
+
+
+Confusion Matrix for Best Model: Case B, classes=0, 1, 2, 3
+
+Train data:
+
+[[200   0   0   0]
+ [  0 200   0   0]
+ [  0   0 199   0]
+ [  0   0   0 200]]
+
+Val data:
+
+[[29  0  0  0]
+ [ 0 30  0  0]
+ [ 0  0 30  0]
+ [ 0  0  0 30]]
+
+
+----------Dataset 1B----------
+
+1. KNN Classifier
+
+K       Training Accuracy       Validation Accuracy
+1           98.99 %                100 %
+7           98.99 %                98.88 %
+15          98.99 %                97.75 %
+
+Confusion Matrix for best model: K = 7, clasess = 0, 1, 2
+
+Train data:
+
+[[196   0   3]
+ [  1 198   1]
+ [  1   0 199]]
+
+Val data:
+
+[[29  0  0]
+ [ 1 29  0]
+ [ 0  0 30]]
+
+2. GMM with full covariance matrix
+
+Q       Training Accuracy       Validation Accuracy
+4             99.33 %               97.75 %
+5             98.99 %               98.88 %
+6             99.33 %               99.22 %
+7             98.83 %               98.55 %
+
+Confusion Matrix for best model: Q = 6, classes = 0, 1, 2
+
+Train data:
+
+[[199   0   0]
+ [  2 198   0]
+ [  2   0 198]]
+
+Val data:
+
+[[28  1  0]
+ [ 0 30  0]
+ [ 0  0 30]]
+
+3. GMM with diagonal covariance matrix
+
+Q       Training Accuracy       Validation Accuracy
+4              99.16 %                  97.75 %
+5              98.33 %                  98.87 %
+6              98.33 %                  98.88 %
+7              98.99 %                  98.88 %
+
+Confusion Matrix for best model: Q = 7, classes = 0, 1, 2
+
+Train data:
+
+[[199   0   0]
+ [  2 197   1]
+ [  3   0 197]]
+
+Val data:
+
+[[29  0  0]
+ [ 0 29  1]
+ [ 0  0 30]]
+
+
+4. Bayes Classifier with KNN
+
+K       Training Accuracy       Validation Accuracy
+10             98.83 %                  97.74 %
+20             97.16 %                  92.11 %
+
+Confusion Matrix for best model: K = 10, classes = 0, 1, 2
+
+Train data:
+
+[[196   0   3]
+ [  0 197   3]
+ [  0   1 199]]
+
+Val data:
+
+[[28  0  1]
+ [ 1 29  0]
+ [ 0  0 30]]

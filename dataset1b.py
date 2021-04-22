@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
 
 
 train_data = pd.read_csv('data/Dataset 1B/train.csv')
@@ -228,13 +230,17 @@ def get_accuracy(data, model):
     correct = 0
     total = data.shape[0]
     d = data.shape[1] - 1
+    y_true = []
+    y_pred = []
     for point in data:
         correct_class = point[d]
         pred_class = predict(point[:d], model)
+        y_pred.append(pred_class)
+        y_true.append(correct_class)
         if pred_class == correct_class:
             correct += 1
     acc = correct / total
-    return acc
+    return acc, y_true, y_pred
 
 
 def knn_classifier(x, data, k):
@@ -258,12 +264,16 @@ def knn_classifier(x, data, k):
 
 def get_knn_accuracy(train_, val_, k):
     class_wise_acc = {}
+    y_pred = []
+    y_true = []
     for class_ in val_:
         class_points = val_.get(class_)
         correct = 0
         total = 0
         for point in class_points:
             pred = knn_classifier(point, train_, k)
+            y_pred.append(pred)
+            y_true.append(class_)
             total += 1
             if pred == class_:
                 correct += 1
@@ -273,18 +283,100 @@ def get_knn_accuracy(train_, val_, k):
             'total': total,
             'accuracy': acc
         }
-    return class_wise_acc
+    return class_wise_acc, y_true, y_pred
 
 
 # GMM model
-model = gmm(train_data, q=4, diagonal=True)  # diagonal = True for diagonal covariance matrix
-train_acc = get_accuracy(train_data, model)
-val_acc = get_accuracy(val_data, model)
-print('Train Accuracy:', train_acc)
-print('Val Accuracy:', val_acc)
+# Qs = [4, 5, 6, 7]
+# for x in Qs:
+#     model = gmm(train_data, q=x, diagonal=False)  # diagonal = True for diagonal covariance matrix
+#     train_acc, train_true, train_pred = get_accuracy(train_data, model)
+#     val_acc, val_true, val_pred = get_accuracy(val_data, model)
+#     print('Q:', x, 'Train Accuracy:', train_acc)
+#     print('Q:', x, 'Val Accuracy:', val_acc)
+#     print('Train confusion matrix:')
+#     print(confusion_matrix(train_true, train_pred))
+#     print('Validation Confusion Matrix:')
+#     print(confusion_matrix(val_true, val_pred))
 
 # KNN model
-train_class_wise = get_class_wise_data(train_data)
-val_class_wise = get_class_wise_data(val_data)
-res = get_knn_accuracy(train_class_wise, val_class_wise, 10)
-print(res)
+# train_class_wise = get_class_wise_data(train_data)
+# val_class_wise = get_class_wise_data(val_data)
+# Ks = [10, 20]
+# for k in Ks:
+#     train_res, train_true, train_pred = get_knn_accuracy(train_class_wise, train_class_wise, k)
+#     val_res, val_true, val_pred = get_knn_accuracy(train_class_wise, val_class_wise, k)
+#     print('K:', k)
+#     total = 0.0
+#     val_total = 0.0
+#     for x in train_res:
+#         print('Class:', x, 'Train Accuracy:', train_res.get(x).get('accuracy'))
+#         print('Class:', x, 'Val Accuracy:', val_res.get(x).get('accuracy'))
+#         total += train_res.get(x).get('accuracy')
+#         val_total += val_res.get(x).get('accuracy')
+#     total /= len(train_res)
+#     val_total /= len(val_res)
+#     print('Train Accuracy:', total)
+#     print('Val Accuracy:', val_total)
+#     print('Train Confusion Matrix:')
+#     print(confusion_matrix(train_true, train_pred))
+#     print('Val Confusion Matrix:')
+#     print(confusion_matrix(val_true, val_pred))
+
+
+fig, ax = plt.subplots()
+colors = ['r', 'g', 'b', 'y']
+legend_arr = []
+i = 0
+min_x = 999
+max_x = -999
+min_y = 999
+max_y = -999
+class_wise_data = get_class_wise_data(train_data)
+for class_ in class_wise_data:
+    class_data = class_wise_data.get(class_)
+    for point in class_data:
+        if point[0] < min_x:
+            min_x = point[0]
+        if point[0] > max_x:
+            max_x = point[0]
+        if point[1] < min_y:
+            min_y = point[1]
+        if point[1] > max_y:
+            max_y = point[1]
+    # ax.scatter(x, y, color=colors[i])
+    i += 1
+# plt.legend(legend_arr)
+# plt.show()
+
+x_list = np.linspace(min_x, max_x, 100)
+y_list = np.linspace(min_y, max_y, 100)
+
+z = np.zeros((len(x_list), len(x_list)))
+X = []
+Y = []
+
+for i in range(len(x_list)):
+    temp_x = []
+    temp_y = []
+    for j in range(len(y_list)):
+        temp_x.append(x_list[i])
+        temp_y.append(y_list[j])
+        point = np.array([x_list[i], y_list[j]])
+        z[i][j] = knn_classifier(point, class_wise_data, 10)
+    X.append(temp_x)
+    Y.append(temp_y)
+
+ax.contourf(X, Y, z)
+
+for class_ in class_wise_data:
+    x = []
+    y = []
+    legend_arr.append(class_)
+    class_data = class_wise_data.get(class_)
+    for point in class_data:
+        x.append(point[0])
+        y.append(point[1])
+    ax.scatter(x, y, color='k')
+
+plt.show()
