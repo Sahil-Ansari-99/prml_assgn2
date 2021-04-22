@@ -1,0 +1,9 @@
+The data is already well seperated. The data from the four classes occupy the four corners as it can be seen in the graph.
+Hence, when we use a KNN classifier, we are able to achieve an accuracy of 100%.
+The same explanation holds for the naive bayes classifier as well. The gaussian classifier is able to perfectly model the data distribution as can be seen in the contour plots resulting in an accuracy of 100%
+
+In this case, the data is not that well seperated as compared to 1a. The data is distributed in a spiral fashion. But data points belonging to the same class are close to each other.
+Hence, a KNN classifier is again able to perform well, as it can be seen in the contour plot, giving a best case accuracy of 98.88 %.
+A GMM classifier is also able to give a performance at par with the KNN classifier giving a best case accuracy of 99.22 % when using 6 modes for full covariance matrix and a best case accuracy of 98.88 % for diagonal covariance matrix.
+Similarly, a Bayes classifier with K=10 is able to give a good performance with an accuracy of 97.74 %.
+We are getting such good accuracies due to the distribution of the data points.
