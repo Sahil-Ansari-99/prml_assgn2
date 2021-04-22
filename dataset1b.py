@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
+from scipy.stats import multivariate_normal
 
 
 train_data = pd.read_csv('data/Dataset 1B/train.csv')
@@ -326,8 +327,8 @@ def get_knn_accuracy(train_, val_, k):
 
 fig, ax = plt.subplots()
 colors = ['r', 'g', 'b', 'y']
-legend_arr = []
-i = 0
+# legend_arr = []
+# i = 0
 min_x = 999
 max_x = -999
 min_y = 999
@@ -345,34 +346,67 @@ for class_ in class_wise_data:
         if point[1] > max_y:
             max_y = point[1]
     # ax.scatter(x, y, color=colors[i])
-    i += 1
-# plt.legend(legend_arr)
+# # plt.legend(legend_arr)
+# # plt.show()
+#
+# x_list = np.linspace(min_x, max_x, 100)
+# y_list = np.linspace(min_y, max_y, 100)
+#
+# z = np.zeros((len(x_list), len(x_list)))
+# X = []
+# Y = []
+#
+# for i in range(len(x_list)):
+#     temp_x = []
+#     temp_y = []
+#     for j in range(len(y_list)):
+#         temp_x.append(x_list[i])
+#         temp_y.append(y_list[j])
+#         point = np.array([x_list[i], y_list[j]])
+#         z[i][j] = knn_classifier(point, class_wise_data, 10)
+#     X.append(temp_x)
+#     Y.append(temp_y)
+#
+# ax.contourf(X, Y, z)
+#
+# for class_ in class_wise_data:
+#     x = []
+#     y = []
+#     legend_arr.append(class_)
+#     class_data = class_wise_data.get(class_)
+#     for point in class_data:
+#         x.append(point[0])
+#         y.append(point[1])
+#     ax.scatter(x, y, color='k')
+#
 # plt.show()
+model = gmm(train_data, q=7, diagonal=True)  # diagonal = True for diagonal covariance matrix
 
 x_list = np.linspace(min_x, max_x, 100)
 y_list = np.linspace(min_y, max_y, 100)
 
-z = np.zeros((len(x_list), len(x_list)))
-X = []
-Y = []
+k = 0
+for class_ in model:
+    z = np.zeros((len(x_list), len(x_list)))
+    X = []
+    Y = []
+    for i in range(len(x_list)):
+        temp_x = []
+        temp_y = []
+        for j in range(len(y_list)):
+            temp_x.append(x_list[i])
+            temp_y.append(y_list[j])
+            point = np.array([x_list[i], y_list[j]])
+            z[i][j] = get_probabilty(point, model.get(class_).get('mu_q'), model.get(class_).get('c_q'), model.get(class_).get('w_q'))
+        X.append(temp_x)
+        Y.append(temp_y)
 
-for i in range(len(x_list)):
-    temp_x = []
-    temp_y = []
-    for j in range(len(y_list)):
-        temp_x.append(x_list[i])
-        temp_y.append(y_list[j])
-        point = np.array([x_list[i], y_list[j]])
-        z[i][j] = knn_classifier(point, class_wise_data, 10)
-    X.append(temp_x)
-    Y.append(temp_y)
-
-ax.contourf(X, Y, z)
+    ax.contour(X, Y, z, 38, colors=colors[k])
+    k += 1
 
 for class_ in class_wise_data:
     x = []
     y = []
-    legend_arr.append(class_)
     class_data = class_wise_data.get(class_)
     for point in class_data:
         x.append(point[0])
